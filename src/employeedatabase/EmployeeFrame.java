@@ -5,6 +5,10 @@
  */
 package employeedatabase;
 
+import java.sql.* ;
+import java.math.* ;
+import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author Richard
@@ -16,8 +20,55 @@ public class EmployeeFrame extends javax.swing.JFrame {
      */
     public EmployeeFrame() {
         initComponents();
+        DisplayEmployees();
     }
-
+    
+    public Connection getConnection() {
+        Connection con;
+        try {
+            con = DriverManager.getConnection("jdbc:mysql://localhost/employeedatabase", "root", "");
+            return con;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public ArrayList<Employee> getEmployeesList() {
+        ArrayList<Employee> employeesList = new ArrayList<Employee>();
+        Connection connection = getConnection();
+        String query = "SELECT * FROM `employee` ";
+        Statement st;
+        ResultSet rs;
+        
+        try{
+            st = connection.createStatement();
+            rs = st.executeQuery(query);
+            Employee employee;
+            while(rs.next()){
+                employee = new Employee(rs.getInt("EmployeeID"), rs.getString("EmployeeFirstName"), rs.getString("EmployeeLastName"), rs.getString("EmployeeJobTitle"));
+                employeesList.add(employee);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return employeesList;
+    }
+    
+    public void DisplayEmployees() {
+        ArrayList<Employee> list = getEmployeesList();
+        DefaultTableModel model = (DefaultTableModel)jTableEmployees.getModel();
+        Object[] row = new Object[4];
+        for(int i = 0; i < list.size(); i++) {
+            row[0] = list.get(i).getId();
+            row[1] = list.get(i).getFirstName();
+            row[2] = list.get(i).getLastName();
+            row[3] = list.get(i).getJobTitle();
+            
+            model.addRow(row);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
