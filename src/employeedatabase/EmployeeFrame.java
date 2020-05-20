@@ -8,7 +8,9 @@ package employeedatabase;
 import java.sql.* ;
 import java.math.* ;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 /**
  *
  * @author Richard
@@ -26,7 +28,7 @@ public class EmployeeFrame extends javax.swing.JFrame {
     public Connection getConnection() {
         Connection con;
         try {
-            con = DriverManager.getConnection("jdbc:mysql://localhost/employeedatabase", "root", "");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/employeedatabase", "root", "");
             return con;
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,7 +48,7 @@ public class EmployeeFrame extends javax.swing.JFrame {
             rs = st.executeQuery(query);
             Employee employee;
             while(rs.next()){
-                employee = new Employee(rs.getInt("EmployeeID"), rs.getString("EmployeeFirstName"), rs.getString("EmployeeLastName"), rs.getString("EmployeeJobTitle"));
+                employee = new Employee(rs.getInt("ID"), rs.getString("FirstName"), rs.getString("LastName"), rs.getString("JobTitle"));
                 employeesList.add(employee);
             }
         } catch (Exception e) {
@@ -66,6 +68,25 @@ public class EmployeeFrame extends javax.swing.JFrame {
             row[3] = list.get(i).getJobTitle();
             
             model.addRow(row);
+        }
+    }
+    
+    public void executeQuery(String query, String message) {
+        Connection con = getConnection();
+        Statement st;
+        try {
+            st = con.createStatement();
+            if((st.executeUpdate(query)) == 1){
+                DefaultTableModel model = (DefaultTableModel)jTableEmployees.getModel();
+                model.setRowCount(0);
+                DisplayEmployees();
+                
+                JOptionPane.showMessageDialog(null, "Data "+message+" successfully");
+            } else {
+                JOptionPane.showMessageDialog(null, "Data not "+message);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
     
@@ -145,16 +166,36 @@ public class EmployeeFrame extends javax.swing.JFrame {
                 "ID", "First Name", "Last Name", "Job Title"
             }
         ));
+        jTableEmployees.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTableEmployeesMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTableEmployees);
 
         jButton_Insert.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jButton_Insert.setText("Insert");
+        jButton_Insert.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_InsertActionPerformed(evt);
+            }
+        });
 
         jButton_Update.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jButton_Update.setText("Update");
+        jButton_Update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_UpdateActionPerformed(evt);
+            }
+        });
 
         jButton_Delete.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jButton_Delete.setText("Delete");
+        jButton_Delete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_DeleteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -247,6 +288,31 @@ public class EmployeeFrame extends javax.swing.JFrame {
     private void jTextField_IDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_IDActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField_IDActionPerformed
+
+    private void jTableEmployeesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableEmployeesMouseClicked
+        int i = jTableEmployees.getSelectedRow();
+        TableModel model = jTableEmployees.getModel();
+        jTextField_ID.setText(model.getValueAt(i,0).toString());
+        jTextField_FirstName.setText(model.getValueAt(i,1).toString());
+        jTextField_LastName.setText(model.getValueAt(i,2).toString());
+        jTextField_JobTitle.setText(model.getValueAt(i,3).toString());
+    }//GEN-LAST:event_jTableEmployeesMouseClicked
+
+    private void jButton_InsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_InsertActionPerformed
+        String query = "INSERT INTO `employee`(`FirstName`, `LastName`, `JobTitle`) VALUES ('"+jTextField_FirstName.getText()+"','"+jTextField_LastName.getText()+"','"+jTextField_JobTitle.getText()+"')";
+        
+        executeQuery(query, "Inserted");
+    }//GEN-LAST:event_jButton_InsertActionPerformed
+
+    private void jButton_UpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_UpdateActionPerformed
+        String query = "UPDATE `employee` SET `FirstName`='"+jTextField_FirstName.getText()+"',`LastName`='"+jTextField_LastName.getText()+"',`JobTitle`='"+jTextField_JobTitle.getText()+"'"+" WHERE `ID` = "+jTextField_ID.getText();
+        executeQuery(query, "updated");
+    }//GEN-LAST:event_jButton_UpdateActionPerformed
+
+    private void jButton_DeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_DeleteActionPerformed
+        String query = "DELETE FROM `employee` WHERE ID ="+jTextField_ID.getText();
+        executeQuery(query, "deleted");
+    }//GEN-LAST:event_jButton_DeleteActionPerformed
 
     /**
      * @param args the command line arguments

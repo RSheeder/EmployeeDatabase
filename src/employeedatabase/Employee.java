@@ -9,7 +9,7 @@ public class Employee {
     private String jobTitle;
     
     public Employee(int ID, String FirstName, String LastName, String JobTitle) {
-        this.id = id;
+        this.id = ID;
         this.firstName = FirstName;
         this.lastName = LastName;
         this.jobTitle = JobTitle;
